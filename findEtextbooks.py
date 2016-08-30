@@ -8,7 +8,7 @@ import lxml.etree as ElementTree
 pubFilePath = "PublisherFiles"
 storeFilePath = "BookstoreFiles"
 catFilePath = "CatalogFiles"
-queryWebService = False     # needs to be True when running the first time - or when bookstore data changes
+queryWebService = True     # needs to be True when running the first time - or when bookstore data changes
 
 
 isbnPattern1 = re.compile(r'978(?:-?\d){10}')
@@ -74,21 +74,20 @@ for catFile in os.listdir(catFilePath):
 # writing the results to file - so as not to overstay our welcome when running multiple times
 # queryWebService will query xISBN webservice if true - will read previous results when false
 
-# xCourseISBNs = []
-# if queryWebService:
-#     for i in courseISBNs:
-#         url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getEditions&format=xml&ai=mike.waugh'.format(i)
-#         response = requests.get(url)
-#         tree = ElementTree.fromstring(response.content)
-#         for child in tree:
-#             xCourseISBNs.append(child.text)
-#     xCourseISBNs = list(set(xCourseISBNs))
-#     with open("expandedCourseISBNs.txt", "w") as outfile:
-#         for item in xCourseISBNs:
-#             outfile.write("%s\n" % item)
-# else:
-#     with open("expandedCourseISBNs.txt", "r") as courseFile:
-#         xCourseISBNs = [book.strip() for book in courseFile]
+xCourseISBNs = set()
+if queryWebService:
+    for i in courseISBNs:
+        url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getEditions&format=xml&ai=mike.waugh'.format(i)
+        response = requests.get(url)
+        tree = ElementTree.fromstring(response.content)
+        for child in tree:
+            xCourseISBNs.add(child.text)
+    with open("expandedCourseISBNs.txt", "w") as outfile:
+        for item in xCourseISBNs:
+            outfile.write("%s\n" % item)
+else:
+    with open("expandedCourseISBNs.txt", "r") as courseFile:
+        xCourseISBNs = [book.strip() for book in courseFile]
 
 
 # matches in pubfile and cat
@@ -96,9 +95,9 @@ for catFile in os.listdir(catFilePath):
 # notDRMfree in cat but not pubfile,
 # noMatch -- in the xCourseISBNs but not in pubfile or cat
 
-matches = pubISBNs.intersection(catISBNs)
-needToBuy = pubISBNs.difference(catISBNs)
-notDRMfree = catISBNs.difference(pubISBNs)
+matches = pubISBNs.intersection(catISBNs).intersection(xCourseISBNs)
+needToBuy = pubISBNs.difference(catISBNs).intersection(xCourseISBNs)
+notDRMfree = catISBNs.difference(pubISBNs).intersection(xCourseISBNs)
 # noMatch = xCourseISBNs.difference(pubISBNs.union(catISBNs))
 
 getMetadata(matches, "matches.csv")
