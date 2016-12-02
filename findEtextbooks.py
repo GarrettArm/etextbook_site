@@ -8,7 +8,7 @@ import lxml.etree as ElementTree
 pubFilePath = "PublisherFiles"
 storeFilePath = "BookstoreFiles"
 catFilePath = "CatalogFiles"
-queryWebService = True     # needs to be True when running the first time - or when bookstore data changes
+queryWebService = False     # needs to be True when running the first time - or when bookstore data changes
 
 
 isbnPattern1 = re.compile(r'978(?:-?\d){10}')
@@ -20,7 +20,7 @@ isbnPattern4 = re.compile(r'a(\d{10})\D')
 def findISBNs(filepath, filename):
     print (filename)
     isbns = []
-    with open(os.path.join(filepath, filename), "r", encoding="ascii", errors="surrogateescape") as isbn_lines:
+    with open(os.path.join(filepath, filename), "r", encoding="utf-8", errors="surrogateescape") as isbn_lines:
         read_data = isbn_lines.readlines()
     for line in read_data:
         isbns.extend(isbnPattern1.findall(line))
@@ -47,7 +47,7 @@ def getMetadata(matchingISBNs, outFileName):
             rows.append(child.attrib)
 
     # print to csv
-    with open(outFileName, "w") as csvfile:
+    with open(outFileName, "w", encoding="utf-8", errors="surrogateescape") as csvfile:
         try:
             fieldnames = rows[1].keys()
         except:
