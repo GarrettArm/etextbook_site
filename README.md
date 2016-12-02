@@ -64,4 +64,7 @@ The script needs the files to be csv. If all of the files are in a single direct
 
 # Running findEtextbooks.py
 
-Open the script in Idle. The first time running the script set queryWebService = True. That will allow the script to query the Xid webservice. After the first time, results are stored locally on a file, so that subsequent runs of the script may be run against the local file, depending what's going on. 
+The first time running the script set queryWebService = True. That will allow the script to query the Xid webservice. After the first time, results are stored locally on a file, so that subsequent runs of the script may be run against the local file, depending what's going on. 
+
+To run it, open Anaconda Prompt, navigate to the directory with the findEtextbooks.py and "python findEtextbooks.py"
+
