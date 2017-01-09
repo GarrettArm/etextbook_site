@@ -8,7 +8,7 @@ import lxml.etree as ElementTree
 pubFilePath = "PublisherFiles"
 storeFilePath = "BookstoreFiles"
 catFilePath = "CatalogFiles"
-queryWebService = False     # needs to be True when running the first time - or when bookstore data changes
+queryWebService = True     # needs to be True when running the first time - or when bookstore data changes
 
 
 isbnPattern1 = re.compile(r'978(?:-?\d){10}')

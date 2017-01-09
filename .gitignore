@@ -1,3 +1,6 @@
 BookstoreFiles/
 CatalogFiles/
 PublisherFiles/
+*.csv
+*.xlsx
+*.txt
