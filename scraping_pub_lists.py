@@ -81,11 +81,32 @@ def scrape_springer():
     SpringerScraping.fetch_unless_present()
 
 
+def scrape_elsevier():
+    url = 'https://www.elsevier.com/solutions/sciencedirect/content/book-title-lists'
+    folder = 'elsevier_output'
+    ElsevierScraping = Scrape_Booklist(url, folder)
+    frontlist_urls = [text
+                      for elem in ElsevierScraping.make_soup().find_all('a')
+                      if 'Frontlist for' in elem.text
+                      for attr, text in elem.attrs.items()
+                      if attr == 'href']
+    backlist_urls = [text
+                     for elem in ElsevierScraping.make_soup().find_all('a')
+                     if 'Backlist for' in elem.text
+                     for attr, text in elem.attrs.items()
+                     if attr == 'href']
+    all_urls = frontlist_urls
+    all_urls.extend(backlist_urls)
+    for url in all_urls:
+        ElsevierScraping.fetch_unless_present(url=url)
+
+
 if __name__ == '__main__':
-    answer = input('are you sure you want to hit their website for again? (y/n):')
+    answer = input("don't make them ban you -- You sure you want to scrape them again? (y/n):")
     if answer.lower() == 'y':
-        # scrape_muse()
-        # scrape_wiley()
-        # scrape_springer()
+        scrape_muse()
+        scrape_wiley()
+        scrape_springer()
+        scrape_elsevier()
     else:
         quit()
