@@ -4,53 +4,88 @@ import os
 
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 
-# Project MUSE
+class Scrape_Booklist:
+    def __init__(self, url, folder, payload=None):
+        self.payload = payload
+        self.url = url
+        self.folder = folder
 
-def make_soup(url):
-    response = fetch_url_content(url)
-    soup = BeautifulSoup(response, 'html.parser')
-    return soup
+    def make_soup(self):
+        response = self.fetch_url_content()
+        soup = BeautifulSoup(response, 'html.parser')
+        return soup
 
+    def fetch_unless_present(self, url=None):
+        if not url:
+            url = self.url
+        os.makedirs(self.folder, exist_ok=True)
+        filename = os.path.split(url)[1]
+        if filename not in os.listdir(self.folder):
+            binary = self.fetch_url_content(url)
+            self.write_binary_to_file(binary, filename)
 
-def fetch_url_content(url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36', }
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    return response.content
+    def fetch_url_content(self, url=None):
+        if not url:
+            url = self.url
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36', }
+        response = requests.get(url, headers=headers, params=self.payload)
+        response.raise_for_status()
+        return response.content
 
-
-def write_binary_to_file(binary, folder, filename):
-    os.makedirs(folder, exist_ok=True)
-    filepath = os.path.join(folder, filename)
-    with open(filepath, 'bw') as f:
-        f.write(binary)
-
-
-def fetch_unless_present(list_of_binary_urls):
-    output_folder = 'muse_output'
-    for partial_url in list_of_binary_urls:
-        filename = os.path.split(partial_url)[1]
-        if filename not in os.listdir(output_folder):
-            muse_xls_url = 'https://muse.jhu.edu/{}'.format(partial_url)
-            binary = fetch_url_content(muse_xls_url)
-            write_binary_to_file(binary, output_folder, filename)
+    def write_binary_to_file(self, binary, filename):
+        filepath = os.path.join(self.folder, filename)
+        with open(filepath, 'bw') as f:
+            f.write(binary)
 
 
 def scrape_muse():
-    muse_soup = make_soup('https://muse.jhu.edu/cgi-bin/book_title_list_html.cgi')
-    muse_xls_links = [text
-                      for elem in muse_soup.find_all('a')
-                      if elem.text == 'Download'
-                      for attr, text in elem.attrs.items()
-                      if attr == 'href']
-    fetch_unless_present(muse_xls_links)
+    url = 'https://muse.jhu.edu/cgi-bin/book_title_list_html.cgi'
+    MuseScraping = Scrape_Booklist(url, 'muse_output')
+    partial_urls = [text
+                    for elem in MuseScraping.make_soup().find_all('a')
+                    if elem.text == 'Download'
+                    for attr, text in elem.attrs.items()
+                    if attr == 'href']
+    for partial_url in partial_urls:
+        full_url = 'https://muse.jhu.edu/{}'.format(partial_url)
+        MuseScraping.fetch_unless_present(url=full_url)
+
+
+def scrape_wiley():
+    folder = 'wiley_output'
+    url = 'http://media.wiley.com/assets/2249/63/onlinebooks_list.xls'
+    WileyScraping = Scrape_Booklist(url, folder)
+    WileyScraping.fetch_unless_present()
+
+
+def scrape_springer():
+    folder = 'springer_output'
+    url = 'http://ebookrecords.springer.com/marcdownload/file'
+
+    book_codes = ["11641", "11640", "41168", "11642", "11643", "41169", "11644",
+                  "11645", "11645-LN", "11646", "41170", "41171", "40367", "11647",
+                  "41172", "11648", "41177", "41173", "11649", "11649-LN", "11650",
+                  "11651", "11651-LN", "41174", "12059", "41175", "41176", ]
+    present_year = datetime.now().year
+    all_years = [str(i) for i in range(2005, present_year + 1)]
+    payload = {"code": book_codes,
+               "year": all_years,
+               "format": "EBOOKLIST",
+               "grouping": "NONE",
+               "SBA": "true",
+               "date": "on", }
+    SpringerScraping = Scrape_Booklist(url, folder, payload)
+    SpringerScraping.fetch_unless_present()
 
 
 if __name__ == '__main__':
     answer = input('are you sure you want to hit their website for again? (y/n):')
     if answer.lower() == 'y':
-        scrape_muse()
+        # scrape_muse()
+        # scrape_wiley()
+        # scrape_springer()
     else:
         quit()
