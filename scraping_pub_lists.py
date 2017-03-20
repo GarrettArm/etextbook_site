@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import shutil
 
 import requests
 from bs4 import BeautifulSoup
@@ -79,6 +80,7 @@ def scrape_springer():
                "date": "on", }
     SpringerScraping = Scrape_Booklist(url, folder, payload)
     SpringerScraping.fetch_unless_present()
+    shuti.
 
 
 def scrape_elsevier():
@@ -101,6 +103,32 @@ def scrape_elsevier():
         ElsevierScraping.fetch_unless_present(url=url)
 
 
+def scrape_UPSO():
+    url = 'http://www.universitypressscholarship.com/fileasset/Title%20Lists/UPSO_Alltitles.xls'
+    folder = 'UPSO_output'
+    UPSOScraping = Scrape_Booklist(url, folder)
+    UPSOScraping.fetch_unless_present()
+
+
+def scrape_JSTOR():
+    url = 'http://about.jstor.org/sites/default/files/misc/Books_at_JSTOR_Title_List.xls'
+    folder = 'JSTOR_output'
+    JSTORScraping = Scrape_Booklist(url, folder)
+    JSTORScraping.fetch_unless_present()
+
+
+def scrape_cambridge():
+    url = 'https://www.cambridge.org/core/services/agents/price-list'
+    folder = 'cambridge_output'
+    CambridgeScraping = Scrape_Booklist(url, folder)
+    USD_urls = [text for elem in CambridgeScraping.make_soup().find_all('a')
+                if 'For USD click here' in elem.text
+                for attr, text in elem.attrs.items()
+                if attr == 'href']
+    for url in USD_urls:
+        CambridgeScraping.fetch_unless_present(url=url)
+
+
 if __name__ == '__main__':
     answer = input("don't make them ban you -- You sure you want to scrape them again? (y/n):")
     if answer.lower() == 'y':
@@ -108,5 +136,8 @@ if __name__ == '__main__':
         scrape_wiley()
         scrape_springer()
         scrape_elsevier()
+        scrape_UPSO()
+        scrape_JSTOR()
+        scrape_cambridge()
     else:
         quit()

@@ -1,3 +1,9 @@
+*.pyc
+.ipynb_checkpoints/*
+
+
+*_output/*
+source_material/*
 BookstoreFiles/
 CatalogFiles/
 PublisherFiles/
