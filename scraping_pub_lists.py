@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 import os
-import shutil
+import zipfile
 
 import requests
 from bs4 import BeautifulSoup
@@ -19,11 +19,14 @@ class Scrape_Booklist:
         soup = BeautifulSoup(response, 'html.parser')
         return soup
 
-    def fetch_unless_present(self, url=None):
+    def fetch_unless_present(self, url=None, extension=None):
         if not url:
             url = self.url
         os.makedirs(self.folder, exist_ok=True)
-        filename = os.path.split(url)[1]
+        if extension:
+            filename = '{}.{}'.format(os.path.split(url)[1], extension)
+        else:
+            filename = os.path.split(url)[1]
         if filename not in os.listdir(self.folder):
             binary = self.fetch_url_content(url)
             self.write_binary_to_file(binary, filename)
@@ -80,7 +83,8 @@ def scrape_springer():
                "date": "on", }
     SpringerScraping = Scrape_Booklist(url, folder, payload)
     SpringerScraping.fetch_unless_present()
-    shuti.
+    with zipfile.ZipFile(os.path.join(folder, 'file'), "r") as zip_ref:
+        zip_ref.extractall("springer_output")
 
 
 def scrape_elsevier():
@@ -126,7 +130,7 @@ def scrape_cambridge():
                 for attr, text in elem.attrs.items()
                 if attr == 'href']
     for url in USD_urls:
-        CambridgeScraping.fetch_unless_present(url=url)
+        CambridgeScraping.fetch_unless_present(url=url, extension='xlsx')
 
 
 if __name__ == '__main__':
@@ -139,5 +143,3 @@ if __name__ == '__main__':
         scrape_UPSO()
         scrape_JSTOR()
         scrape_cambridge()
-    else:
-        quit()
