@@ -134,12 +134,10 @@ def scrape_cambridge():
 
 
 if __name__ == '__main__':
-    answer = input("don't make them ban you -- You sure you want to scrape them again? (y/n):")
-    if answer.lower() == 'y':
-        scrape_muse()
-        scrape_wiley()
-        scrape_springer()
-        scrape_elsevier()
-        scrape_UPSO()
-        scrape_JSTOR()
-        scrape_cambridge()
+    scrape_muse()
+    scrape_wiley()
+    scrape_springer()
+    scrape_elsevier()
+    scrape_UPSO()
+    scrape_JSTOR()
+    scrape_cambridge()
