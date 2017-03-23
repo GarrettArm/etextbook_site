@@ -1,3 +1,5 @@
+ssh_passwords.txt
+.cache/*
 *.pyc
 .ipynb_checkpoints/*
 
