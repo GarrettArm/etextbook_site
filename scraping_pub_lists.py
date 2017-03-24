@@ -19,12 +19,12 @@ class Scrape_Booklist:
         soup = BeautifulSoup(response, 'html.parser')
         return soup
 
-    def fetch_unless_present(self, url=None, extension=None):
+    def fetch_unless_present(self, url=None, override_ext=None):
         if not url:
             url = self.url
         os.makedirs(self.folder, exist_ok=True)
-        if extension:
-            filename = '{}.{}'.format(os.path.split(url)[1], extension)
+        if override_ext:
+            filename = '{}.{}'.format(os.path.split(url)[1], override_ext)
         else:
             filename = os.path.split(url)[1]
         if filename not in os.listdir(self.folder):
@@ -46,8 +46,9 @@ class Scrape_Booklist:
 
 
 def scrape_muse():
+    folder = 'PublisherFiles/muse_output'
     url = 'https://muse.jhu.edu/cgi-bin/book_title_list_html.cgi'
-    MuseScraping = Scrape_Booklist(url, 'muse_output')
+    MuseScraping = Scrape_Booklist(url, folder)
     partial_urls = [text
                     for elem in MuseScraping.make_soup().find_all('a')
                     if elem.text == 'Download'
@@ -59,14 +60,14 @@ def scrape_muse():
 
 
 def scrape_wiley():
-    folder = 'wiley_output'
+    folder = 'PublisherFiles/wiley_output'
     url = 'http://media.wiley.com/assets/2249/63/onlinebooks_list.xls'
     WileyScraping = Scrape_Booklist(url, folder)
     WileyScraping.fetch_unless_present()
 
 
 def scrape_springer():
-    folder = 'springer_output'
+    folder = 'PublisherFiles/springer_output'
     url = 'http://ebookrecords.springer.com/marcdownload/file'
 
     book_codes = ["11641", "11640", "41168", "11642", "11643", "41169", "11644",
@@ -89,7 +90,7 @@ def scrape_springer():
 
 def scrape_elsevier():
     url = 'https://www.elsevier.com/solutions/sciencedirect/content/book-title-lists'
-    folder = 'elsevier_output'
+    folder = 'PublisherFiles/elsevier_output'
     ElsevierScraping = Scrape_Booklist(url, folder)
     frontlist_urls = [text
                       for elem in ElsevierScraping.make_soup().find_all('a')
@@ -109,28 +110,28 @@ def scrape_elsevier():
 
 def scrape_UPSO():
     url = 'http://www.universitypressscholarship.com/fileasset/Title%20Lists/UPSO_Alltitles.xls'
-    folder = 'UPSO_output'
+    folder = 'PublisherFiles/UPSO_output'
     UPSOScraping = Scrape_Booklist(url, folder)
     UPSOScraping.fetch_unless_present()
 
 
 def scrape_JSTOR():
     url = 'http://about.jstor.org/sites/default/files/misc/Books_at_JSTOR_Title_List.xls'
-    folder = 'JSTOR_output'
+    folder = 'PublisherFiles/JSTOR_output'
     JSTORScraping = Scrape_Booklist(url, folder)
     JSTORScraping.fetch_unless_present()
 
 
 def scrape_cambridge():
     url = 'https://www.cambridge.org/core/services/agents/price-list'
-    folder = 'cambridge_output'
+    folder = 'PublisherFiles/cambridge_output'
     CambridgeScraping = Scrape_Booklist(url, folder)
     USD_urls = [text for elem in CambridgeScraping.make_soup().find_all('a')
                 if 'For USD click here' in elem.text
                 for attr, text in elem.attrs.items()
                 if attr == 'href']
     for url in USD_urls:
-        CambridgeScraping.fetch_unless_present(url=url, extension='xlsx')
+        CambridgeScraping.fetch_unless_present(url=url, override_ext='xlsx')
 
 
 if __name__ == '__main__':

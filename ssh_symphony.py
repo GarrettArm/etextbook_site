@@ -2,12 +2,13 @@
 
 import paramiko
 import json
-import time
 import functools
+import time
+import os
 # # LOUIS's SSH connection accepts wired campus connections.
 
 
-def get_credentials(server='test'):
+def read_credentials(server='test'):
     with open('ssh_passwords.txt', 'r') as f:
         credentials = json.load(f)
     server = credentials[server]
@@ -44,17 +45,19 @@ def copy_an_ssh_file(host, user, pw, filename):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(host, username=user, password=pw)
-
-    def my_callback(filename, bytes_so_far, bytes_total):
-        print('Transfer of %r is at %d/%d bytes (%.1f%%)' % (
-            filename, bytes_so_far, bytes_total, 100. * bytes_so_far / bytes_total))
-
     sftp = client.open_sftp()
     sftp.chdir('Xfer')
     callback_for_filename = functools.partial(my_callback, filename)
+    target_folder = os.path.join('CatalogFiles', filename)
+    os.makedirs(target_folder, exist_ok=True)
     sftp.get(filename, filename, callback=callback_for_filename)
-
     client.close()
+
+
+def my_callback(filename, bytes_so_far, bytes_total):
+    pass
+    print('Transfer of {} is at {}/{} bytes ({}%)'.format(
+        filename, bytes_so_far, bytes_total, int(100 * bytes_so_far / bytes_total)))
 
 
 def write_to_file(filename, text):
@@ -62,59 +65,31 @@ def write_to_file(filename, text):
         f.write(text)
 
 
-def append_to_file(filename, text):
-    with open(filename, 'a') as f:
-        f.write(text)
+def bash_list(stdout_text):
+    cleaned_set = depipe_and_setify(stdout_text)
+    return ' '.join(i for i in cleaned_set if i)
 
 
 def depipe_and_setify(text):
     return {i for i in text.split('|\n')}
 
 
-if __name__ == '__main__':
+def main():
     start = time.time()
+    user, password, host = read_credentials(server='production')
+    command_one = """cd Xfer ; ./lz0007 'selitem -lONLINE -oC >locationOnline'"""
+    ssh_one = send_an_ssh_command(host, user, password, command_one)
+    exit_status_one, stdout_one, stderr_one = ssh_one
 
-    user, password, host = get_credentials(server='production')
-    # new_command = """cd Xfer ; ./lz0007 'selitem -lONLINE -oC'"""
-    new_command = """cd Xfer ; ./lz0007 'selitem -lONLINE -oC >locationOnline'"""
-    new_ssh_command = send_an_ssh_command(host, user, password, new_command)
-    new_exit_status, new_stdout, new_stderr = new_ssh_command
+    command_two_output_filename = 'onlineISBN.txt'
+    command_two = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC -oSe -e020 > {}'""".format(command_two_output_filename)
+    ssh_two = send_an_ssh_command(host, user, password, command_two)
+    exit_status_two, stdout_two, stderr_two = ssh_two
 
-    print(time.time() - start)
-    # print('Exit status: ', new_exit_status)
-    # print('Out: ', depipe_and_setify(new_stdout))
-    # print('StdError: ', new_stderr)
-
-    # write_to_file('lONLINE.txt', new_stdout)
-
-    # newer_set_stdout = set()
-    # count = 0
-    # for i in depipe_and_setify(new_stdout):
-    #     print(count, '\t', time.time() - start)
-    #     newer_command = """cd Xfer ; echo {} | ./lz0007 'selcatalog -iC -oSe -e020'""".format(i)
-    #     newer_ssh_command = send_an_ssh_command(host, user, password, newer_command)
-    #     newer_exit_status, newer_stdout, newer_stderr = newer_ssh_command
-
-    #     # print('Exit status: ', newer_exit_status)
-    #     # print('Out: ', depipe_and_setify(newer_stdout))
-    #     # print('StdError: ', newer_stderr)
-
-    #     newer_set_stdout.add(newer_stdout)
-    #     # print(newer_set_stdout)
-    #     count += 1
-
-    # newer_text = '\n'.join(i for i in newer_set_stdout)
-    # write_to_file('newer.txt', newer_text)
-
-    newer_command = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC -oSe -e020 > onlineISBN.txt'"""
-    newer_ssh_command = send_an_ssh_command(host, user, password, newer_command)
-    newer_exit_status, newer_stdout, newer_stderr = newer_ssh_command
-    print('Exit status: ', newer_exit_status)
-    print('Out: ', depipe_and_setify(newer_stdout))
-    print('StdError: ', newer_stderr)
+    copy_an_ssh_file(host, user, password, command_two_output_filename)
 
     print(time.time() - start)
 
-    copy_an_ssh_file(host, user, password, "onlineISBN.txt")
 
-    print(time.time() - start)
+if __name__ == '__main__':
+    main()
