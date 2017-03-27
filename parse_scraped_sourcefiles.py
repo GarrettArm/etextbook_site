@@ -12,19 +12,19 @@ def main():
         all_df_dict = parse_and_nest_xl(all_df_dict, file)
     for file in csv_files:
         all_df_dict = parse_and_nest_csv(all_df_dict, file)
+    return all_df_dict
 
 
 def lookup_all_xl_csv_files():
-    output_folders = [i for i in os.listdir('.')
-                      if os.path.isdir(os.path.abspath(i)) and '_output' in i]
-    xl_files = [os.path.join(folder, file)
-                for folder in output_folders
-                for file in os.listdir(folder)
-                if os.path.splitext(file)[1] in ('.xlsx', '.xls')]
-    csv_files = [os.path.join(folder, file)
-                 for folder in output_folders
-                 for file in os.listdir(folder)
-                 if os.path.splitext(file)[1] == '.csv']
+    xl_files = []
+    csv_files = []
+    for root, dirs, files in os.walk('PublisherFiles'):
+        for file in files:
+            fullpath = os.path.join(root, file)
+            if os.path.splitext(file)[1] in ('.xlsx', '.xls'):
+                xl_files.append(fullpath)
+            if os.path.splitext(file)[1] == '.csv':
+                csv_files.append(fullpath)
     return xl_files, csv_files
 
 

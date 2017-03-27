@@ -135,11 +135,12 @@ def scrape_cambridge():
 
 
 if __name__ == '__main__':
-    print("""This script will not repull the datasets already present in the *_output folders.\n
-             If you wish to refresh any dataset, do delete the currently present file.\n
-             You must manually provide files for the datasets from Taylor & Francis, from\n
-             Knovel, and from OpenStax.\n
-             Any xls, xlsx, or csv in an *_output\ folder will be used as source data.""")
+    print("""
+This script will not repull the datasets already present in the *_output folders.
+If you wish to refresh any dataset, do delete the currently present file.
+You must manually provide files for the datasets from Taylor & Francis, from
+Knovel, and from OpenStax.
+Any xls, xlsx, or csv in an PublisherFiles\ subfolder will be used as source data.""")
     scrape_muse()
     scrape_wiley()
     scrape_springer()

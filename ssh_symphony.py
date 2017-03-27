@@ -5,8 +5,14 @@ import json
 import functools
 import time
 import os
-# # LOUIS's SSH connection accepts wired campus connections.
+# LOUIS's SSH connection accepts wired campus connections.
+# You must make a "ssh_passwords.txt" file in the program directory with the text
+# {"production": {"user": "correct_user", "password": "correct_pass", "host": "lsu.louislibraries.org"}, "test": {"user": "correct_user", "password": "correct_pass", "host": "lsu.test.louislibraries.org"}}
 
+
+# An attempt was made to change the ssh commands, so that no file was created on the host machine.. that the output of the first command
+# would be saved as a bash variable, then fed to the next command.  However, the bash command failed when given an list of 40000 items
+# as an argument.  The previous process is preserved:  1) bash command >> file1, 2) bash command file1 >> file2, 3) sftp file2 to client.
 
 def read_credentials(server='test'):
     with open('ssh_passwords.txt', 'r') as f:
@@ -41,16 +47,16 @@ def send_an_ssh_command(host, user, pw, command):
     return exit_status, stdout_text, stderr_text
 
 
-def copy_an_ssh_file(host, user, pw, filename):
+def copy_an_ssh_file(host, user, pw, source_filename):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(host, username=user, password=pw)
     sftp = client.open_sftp()
     sftp.chdir('Xfer')
-    callback_for_filename = functools.partial(my_callback, filename)
-    target_folder = os.path.join('CatalogFiles', filename)
-    os.makedirs(target_folder, exist_ok=True)
-    sftp.get(filename, filename, callback=callback_for_filename)
+    callback_for_filename = functools.partial(my_callback, source_filename)
+    target_filepath = os.path.join('CatalogFiles', source_filename)
+    os.makedirs('CatalogFiles', exist_ok=True)
+    sftp.get(source_filename, target_filepath, callback=callback_for_filename)
     client.close()
 
 
@@ -87,6 +93,10 @@ def main():
     exit_status_two, stdout_two, stderr_two = ssh_two
 
     copy_an_ssh_file(host, user, password, command_two_output_filename)
+
+    command_three = """cd Xfer ; rm locationOnline ; rm onlineISBN.txt"""
+    ssh_three = send_an_ssh_command(host, user, password, command_three)
+    exit_status_three, stdout_three, stderr_three = ssh_three
 
     print(time.time() - start)
 
