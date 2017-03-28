@@ -3,18 +3,12 @@ import re
 import requests
 import csv
 
-import lxml.etree as ElementTree
+import lxml.etree as ET
 
-pubFilePath = "PublisherFiles"
-storeFilePath = "BookstoreFiles"
-catFilePath = "CatalogFiles"
+
 queryWebService = True     # needs to be True when running the first time - or when bookstore data changes
 
-
-isbnPattern1 = re.compile(r'978(?:-?\d){10}')
-isbnPattern2 = re.compile(r'[A-Za-z]((?:-?\d){10})\D')
-isbnPattern3 = re.compile(r'[A-zA-Z]((?:-?\d){9}X)')
-isbnPattern4 = re.compile(r'a(\d{10})\D')
+ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
 
 
 def findISBNs(filepath, filename):
@@ -23,10 +17,7 @@ def findISBNs(filepath, filename):
     with open(os.path.join(filepath, filename), "r", encoding="utf-8", errors="surrogateescape") as isbn_lines:
         read_data = isbn_lines.readlines()
     for line in read_data:
-        isbns.extend(isbnPattern1.findall(line))
-        isbns.extend(isbnPattern2.findall(line))
-        isbns.extend(isbnPattern3.findall(line))
-        isbns.extend(isbnPattern4.findall(line))
+        isbns.extend(ISBNregex.findall(line))
     stripped = set()
     for y in isbns:
         while '-' in y:
@@ -37,14 +28,15 @@ def findISBNs(filepath, filename):
 
 def getMetadata(matchingISBNs, outFileName):
     rows = []
-    for z in matchingISBNs:
-        urlz = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getMetadata&format=xml&fl=*&ai=mike.waugh'.format(z)
-        response = requests.get(urlz)
-        tree = ElementTree.fromstring(response.content)
+    for isbn in matchingISBNs:
+        url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getMetadata&format=xml&fl=*&ai=mike.waugh'.format(isbn)
+        response = requests.get(url)
+        tree = ET.fromstring(response.content)
         if 'stat' in tree.attrib:
-            print(z, 'returning url with', tree.attrib)
+            print(isbn, 'returning url with', tree.attrib)
         for child in tree:
             rows.append(child.attrib)
+    print(rows)
 
     # print to csv
     with open(outFileName, "w", encoding="utf-8", errors="surrogateescape") as csvfile:
@@ -59,14 +51,17 @@ def getMetadata(matchingISBNs, outFileName):
 
 
 pubISBNs = set()
+pubFilePath = "PublisherFiles"
 for pubFile in os.listdir(pubFilePath):
     pubISBNs.update(findISBNs(pubFilePath, pubFile))
 
 courseISBNs = set()
+storeFilePath = "BookstoreFiles"
 for storeFile in os.listdir(storeFilePath):
     courseISBNs.update(findISBNs(storeFilePath, storeFile))
 
 catISBNs = set()
+catFilePath = "CatalogFiles"
 for catFile in os.listdir(catFilePath):
     catISBNs.update(findISBNs(catFilePath, catFile))
 
@@ -74,12 +69,13 @@ for catFile in os.listdir(catFilePath):
 # writing the results to file - so as not to overstay our welcome when running multiple times
 # queryWebService will query xISBN webservice if true - will read previous results when false
 
+
 xCourseISBNs = set()
 if queryWebService:
     for i in courseISBNs:
         url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getEditions&format=xml&ai=mike.waugh'.format(i)
         response = requests.get(url)
-        tree = ElementTree.fromstring(response.content)
+        tree = ET.fromstring(response.content)
         for child in tree:
             xCourseISBNs.add(child.text)
     with open("expandedCourseISBNs.txt", "w") as outfile:
@@ -95,9 +91,12 @@ else:
 # notDRMfree in cat but not pubfile,
 # noMatch -- in the xCourseISBNs but not in pubfile or cat
 
+
 matches = pubISBNs.intersection(catISBNs).intersection(xCourseISBNs)
 needToBuy = pubISBNs.difference(catISBNs).intersection(xCourseISBNs)
 notDRMfree = catISBNs.difference(pubISBNs).intersection(xCourseISBNs)
+
+
 # noMatch = xCourseISBNs.difference(pubISBNs.union(catISBNs))
 
 getMetadata(matches, "matches.csv")
@@ -106,3 +105,4 @@ getMetadata(notDRMfree, "notDRMfree.csv")
 
 
 print("done ")
+
