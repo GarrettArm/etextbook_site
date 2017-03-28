@@ -1,4 +1,4 @@
-ssh_passwords.txt
+*_passwords.txt
 .cache/*
 *.pyc
 .ipynb_checkpoints/*

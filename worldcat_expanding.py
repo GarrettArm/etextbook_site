@@ -10,7 +10,7 @@ ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
 
 
 def get_password():
-    with open('worldcat_password.txt', 'r') as f:
+    with open('worldcat_passwords.txt', 'r') as f:
         key = f.read()
         return key
 
