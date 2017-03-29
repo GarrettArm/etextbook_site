@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
+import re
+from io import BytesIO
+
 import requests
 import pymarc
-import os
-import re
 
 
 ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
@@ -17,13 +18,7 @@ def get_password():
 
 def lookup_alternates(ISBN, password):
     response = call_worldcat(ISBN, password)
-    # cant get pymarc to parse a marcxml bytestream or string,
-    # so writing it to file, which pymarc can parse.  hack.
-    filename = "there_should_not_be_a_file_named_thshis.txt"
-    with open(filename, 'wb') as f:
-        f.write(response)
-    isbns_marcrecords = parse_marcxml_for_ISBNS(filename)
-    os.remove(filename)
+    isbns_marcrecords = parse_marcxml_for_ISBNS(BytesIO(response))
     return isbns_marcrecords
 
 
@@ -61,4 +56,4 @@ def parse_marcxml_for_ISBNS(filename):
 
 if __name__ == '__main__':
     worldcat_key = get_password()
-    lookup_alternates('9780123749284', worldcat_key)
+    print([i for i in lookup_alternates('9780123749284', worldcat_key)])
