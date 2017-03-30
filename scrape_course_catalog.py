@@ -3,9 +3,13 @@
 import os
 from collections import namedtuple
 import itertools
+import re
 
 from bs4 import BeautifulSoup
 import requests
+
+
+season_dept_pattern = re.compile(r'(First|Second|)(Winter|Summer|Spring|Fall)(Module|)(\d{4})(Intersession|)([\S]+)')
 
 
 def make_a_request(url):
@@ -38,16 +42,30 @@ def lookup_all_course_urls():
 
 
 def scrape_write_all_course_listing(courses_urls):
+    os.makedirs('course_listings', exist_ok=True)
+    all_course_files = [file
+                        for root, dirs, files in os.walk('course_listings')
+                        for file in files
+                        if os.path.isfile(os.path.join(root, file))]
     for course, url_ending in courses_urls.items():
-        os.makedirs('course_listings', exist_ok=True)
-        filepath = os.path.join('course_listings', '{}.txt'.format(course))
-        if os.path.isfile(filepath):
+        if '{}.txt'.format(course) in all_course_files:
             continue
         url = 'http://appl101.lsu.edu{}'.format(url_ending)
         soup = make_a_soup(url)
         text = soup.find('pre')
-        with open(filepath, 'w') as f:
+        pre, season, post, year, modulator, dept = find_season_dept_in_last_line(text.text)
+        target_dir = os.path.join('course_listings', year, '_'.join(i for i in (pre, season, post, year, modulator) if i))
+        os.makedirs(target_dir, exist_ok=True)
+        target_filepath = os.path.join(target_dir, '{}.txt'.format(course))
+        with open(target_filepath, 'w') as f:
             f.write(text.text)
+
+
+def find_season_dept_in_last_line(text):
+    for line in text.split('\n'):
+        if not exclude_line(line):
+            last_line = line
+    return season_dept_pattern.findall(last_line.replace(' ', ''))[0]
 
 
 def parse_course_listing_texts(filepath):
@@ -80,6 +98,7 @@ CourseItem = namedtuple("CourseItem", ["available", "enrollment_count", "abbr_nu
 
 
 def build_namedtuple(line):
+    # the printout of the courses follows a patter of splitting elements at predetermined widths
     return CourseItem(line[:4].strip(), line[4:10].strip(), line[10:21].strip(), line[21:28].strip(), line[28:31].strip(),
                       line[31:55].strip(), line[55:59].strip(), line[59:70].strip(), line[70:79].strip(), line[79:84].strip(),
                       line[85:99].strip(), line[100:117].strip(), line[117:].strip())
