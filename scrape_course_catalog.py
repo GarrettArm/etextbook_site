@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import os
-from collections import namedtuple
 import itertools
 import re
 
@@ -41,7 +40,7 @@ def lookup_all_course_urls():
     return courses_urls
 
 
-def scrape_write_all_course_listing(courses_urls):
+def scrape_write_all_course_listings(courses_urls):
     os.makedirs('course_listings', exist_ok=True)
     all_course_files = [file
                         for root, dirs, files in os.walk('course_listings')
@@ -68,21 +67,6 @@ def find_season_dept_in_last_line(text):
     return season_dept_pattern.findall(last_line.replace(' ', ''))[0]
 
 
-def parse_course_listing_texts(filepath):
-    course_nts = []
-    with open(filepath, 'r') as f:
-        lines = f.readlines()
-    for line in lines:
-        if exclude_line(line):
-            continue
-        course_nts.append(build_namedtuple(line))
-
-        if line:        # this finds the footer line (season & dept)
-            season_dept = line.replace('\n', '')
-    course_nts.pop()    # this remove the footer line from the main data list
-    return course_nts, season_dept
-
-
 def exclude_line(line):
     if not line.strip():
         return True
@@ -92,19 +76,7 @@ def exclude_line(line):
     return False
 
 
-CourseItem = namedtuple("CourseItem", ["available", "enrollment_count", "abbr_num", "type", "sec_num",
-                                       "course_title", "credit_hours", "begin_end", "days", "room",
-                                       "building", "special_enrollment", "instructor"])
-
-
-def build_namedtuple(line):
-    # the printout of the courses follows a patter of splitting elements at predetermined widths
-    return CourseItem(line[:4].strip(), line[4:10].strip(), line[10:21].strip(), line[21:28].strip(), line[28:31].strip(),
-                      line[31:55].strip(), line[55:59].strip(), line[59:70].strip(), line[70:79].strip(), line[79:84].strip(),
-                      line[85:99].strip(), line[100:117].strip(), line[117:].strip())
-
-
 if __name__ == '__main__':
     all_course_urls = lookup_all_course_urls()
-    scrape_write_all_course_listing(all_course_urls)
+    scrape_write_all_course_listings(all_course_urls)
     # courseNT_seasonDept = parse_course_listing_texts(filepath_to_scraped_course.txt)

@@ -54,6 +54,10 @@ def parse_marcxml_for_ISBNS(filename):
     return (all_isbns, records)
 
 
-if __name__ == '__main__':
+def main(isbn):
     worldcat_key = get_password()
-    print([i for i in lookup_alternates('9780123749284', worldcat_key)])
+    return lookup_alternates(isbn, worldcat_key)
+
+
+if __name__ == '__main__':
+    main('9780123749284')

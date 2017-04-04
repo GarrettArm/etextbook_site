@@ -80,8 +80,12 @@ def depipe_and_setify(text):
     return {i for i in text.split('|\n')}
 
 
-def main():
+def generate_onlineISBN_file():
+    if os.path.isfile(os.path.join('CatalogFiles', 'onlineISBN.txt')):
+        return
+
     start = time.time()
+    print(start)
     user, password, host = read_credentials(server='production')
     command_one = """cd Xfer ; ./lz0007 'selitem -lONLINE -oC >locationOnline'"""
     ssh_one = send_an_ssh_command(host, user, password, command_one)
@@ -102,4 +106,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    generate_onlineISBN_file()

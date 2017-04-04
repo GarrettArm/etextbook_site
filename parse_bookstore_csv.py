@@ -39,10 +39,11 @@ def cleanup_bookstore_file(filepath):
 
 def parse_bookstore_files(text):
     headers = ('Dept/Course', 'Section', 'unnamed1', 'Professor', 'Author', 'Title', 'ISBN', 'Publisher', 'RcCd', 'STS')
-    return pd.read_csv(io.StringIO(file_text), delimiter=',', names=headers)
+    return pd.read_csv(io.StringIO(text), delimiter=',', names=headers)
 
 
 if __name__ == '__main__':
+    print('Do you trust the csv the Bookstore provided (with books required for upcoming classes) is up-to-date?')
     filepath = input('what is the path to your bookstorelist source csv?')
     file_text = cleanup_bookstore_file(filepath)
     df = parse_bookstore_files(file_text)
