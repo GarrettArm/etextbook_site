@@ -40,4 +40,7 @@ def build_namedtuple(line):
 
 
 if __name__ == '__main__':
+    print("""
+    if you believe the courses for a certain semester may have changed, You must delete
+    the current file.  Otherwise the new version will not be downloaded.""")
     courseNT_seasonDept = parse_course_listing_texts('filepath_to_scraped_course.txt')

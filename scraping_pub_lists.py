@@ -85,7 +85,7 @@ def scrape_springer():
     SpringerScraping = Scrape_Booklist(url, folder, payload)
     SpringerScraping.fetch_unless_present()
     with zipfile.ZipFile(os.path.join(folder, 'file'), "r") as zip_ref:
-        zip_ref.extractall("springer_output")
+        zip_ref.extractall(folder)
 
 
 def scrape_elsevier():
