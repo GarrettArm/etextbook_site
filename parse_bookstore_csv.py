@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import io
+import os
 
 import pandas as pd
 
@@ -44,6 +45,10 @@ def parse_bookstore_files(text):
 
 if __name__ == '__main__':
     print('Do you trust the csv the Bookstore provided (with books required for upcoming classes) is up-to-date?')
-    filepath = input('what is the path to your bookstorelist source csv?')
-    file_text = cleanup_bookstore_file(filepath)
+
+    file_text = cleanup_bookstore_file('BookstoreFiles/fallbooklist.csv')
     df = parse_bookstore_files(file_text)
+
+    os.makedirs('output', exist_ok=True)
+    with open(os.path.join('output', 'bookstore.csv'), 'w') as f:
+        f.write(df.to_csv())

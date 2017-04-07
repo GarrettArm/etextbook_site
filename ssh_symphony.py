@@ -15,10 +15,11 @@ import os
 # as an argument.  The previous process is preserved:  1) bash command >> file1, 2) bash command file1 >> file2, 3) sftp file2 to client.
 
 def read_credentials(server='test'):
-    with open('ssh_passwords.txt', 'r') as f:
-        credentials = json.load(f)
-    server = credentials[server]
-    return server["user"], server["password"], server["host"]
+    with open('passwords.txt', 'r') as f:
+        parsed_json = json.load(f)
+        credentials = parsed_json['Symphony']
+        server = credentials[server]
+        return server["user"], server["password"], server["host"]
 
 
 def send_an_ssh_command(host, user, pw, command):

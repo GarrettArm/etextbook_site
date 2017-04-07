@@ -69,4 +69,15 @@ def create_nested_dict(dictionary, key, subkey, value):
 
 
 if __name__ == '__main__':
-    main()
+    all_columns = ''
+    all_string = ""
+    all_df_dict = main()
+    for k, v in all_df_dict.items():
+        all_string = "{}\n\n{}".format(all_string, k)
+        all_columns = "{}\n\n{}".format(all_columns, k)
+        for name, df in v.items():
+            all_string = "{}\n{}\n{}".format(all_string, name, df.to_string(max_rows=5, index=False, index_names=False))
+            all_columns = "{}\n\{}{}".format(all_columns, name, df.columns)
+    os.makedirs('output', exist_ok=True)
+    with open(os.path.join('output', 'publisher_files.txt'), 'w') as f:
+        f.write(all_columns)

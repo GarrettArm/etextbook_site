@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
 import re
+import os
+import json
 from io import BytesIO
 
 import requests
@@ -11,8 +13,9 @@ ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
 
 
 def get_password():
-    with open('worldcat_passwords.txt', 'r') as f:
-        key = f.read()
+    with open('passwords.txt', 'r') as f:
+        parsed_json = json.load(f)
+        key = parsed_json['Worldcat']
         return key
 
 
@@ -60,4 +63,8 @@ def main(isbn):
 
 
 if __name__ == '__main__':
-    main('9780123749284')
+    os.makedirs('output', exist_ok=True)
+    expanded_isbns, expanded_records = main('0803741693')
+    a_string = "{}\n\n{}".format(expanded_isbns, "\n".join([str(i.as_dict()) for i in expanded_records]))
+    with open(os.path.join('output', 'worldcat_expanded.txt'), 'w') as f:
+        f.write(a_string)

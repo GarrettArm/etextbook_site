@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 
@@ -85,27 +86,26 @@ class DiscoveryClient:
                    'x-authenticationToken': self.AuthToken,
                    'x-sessionToken': self.SessionToken}
         search_text = {"SearchCriteria": {"Queries": [{
-                                                "BooleanOperator": "And",
-                                                "FieldCode": "IB",
-                                                "Term": "{}".format(query)}, ],
+                                          "BooleanOperator": "And",
+                                          "FieldCode": "IB",
+                                          "Term": "{}".format(query)}, ],
                                           "SearchMode": "all",
                                           "IncludeFacets": "n",
                                           "Sort": "relevance",
-                                         },
-                        "RetrievalCriteria": {"View": "brief",
-                                              "ResultsPerPage": 100,
-                                              "PageNumber": 1,
-                                              "Highlight": "n",
+                                          },
+                       "RetrievalCriteria": {"View": "brief",
+                                             "ResultsPerPage": 100,
+                                             "PageNumber": 1,
+                                             "Highlight": "n",
                                              },
-                        "Actions": None
-                      }
+                       "Actions": None
+                       }
         search_json = json.dumps(search_text)
         response = requests.post(url=url,
-                                data=search_json,
-                                headers=headers)
+                                 data=search_json,
+                                 headers=headers)
         response.raise_for_status()
         return response.text
-
 
     def retrieve_record(self, accession_number, db_code, terms_to_highlight=None, preferred_format='ebook-epub'):
         '''Returns metadata (including abstract and full-text if applicable) for a single record.'''
@@ -127,8 +127,9 @@ class DiscoveryClient:
 
 
 def read_credentials():
-    with open('Discovery_passwords.txt', 'r') as f:
-        credentials = json.load(f)
+    with open('passwords.txt', 'r') as f:
+        parsed_json = json.load(f)
+        credentials = parsed_json['Discovery']
     return credentials["UserId"], credentials["Password"], credentials["Profile"]
 
 
@@ -142,8 +143,12 @@ if __name__ == '__main__':
     client = DiscoveryClient()
     client.authenticate_user(UserId, Password)
     client.create_session(Profile)
-    client.get_info()
+    client.show_info()
     a_search = client.basic_search('0803741693')
     print(json.loads(a_search))
     client.end_session()
     print(pretty_print(client.Info))
+
+    os.makedirs('output', exist_ok=True)
+    with open(os.path.join('output', 'Discovery_search_for_a_novel_by_ISBN.txt'), 'w') as f:
+        f.write(a_search)
