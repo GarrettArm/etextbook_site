@@ -83,17 +83,18 @@ def depipe_and_setify(text):
 
 def generate_onlineISBN_file():
     if os.path.isfile(os.path.join('CatalogFiles', 'onlineISBN.txt')):
+        print('file exists already.  Exiting.')
         return
 
     start = time.time()
-    print(start)
+    print('starting at time: {}'.format(start))
     user, password, host = read_credentials(server='production')
     command_one = """cd Xfer ; ./lz0007 'selitem -lONLINE -oC >locationOnline'"""
     ssh_one = send_an_ssh_command(host, user, password, command_one)
     exit_status_one, stdout_one, stderr_one = ssh_one
 
     command_two_output_filename = 'onlineISBN.txt'
-    command_two = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC -oSe -e020 > {}'""".format(command_two_output_filename)
+    command_two = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC -fMARC -oSe -e020 > {}'""".format(command_two_output_filename)
     ssh_two = send_an_ssh_command(host, user, password, command_two)
     exit_status_two, stdout_two, stderr_two = ssh_two
 
@@ -103,7 +104,7 @@ def generate_onlineISBN_file():
     ssh_three = send_an_ssh_command(host, user, password, command_three)
     exit_status_three, stdout_three, stderr_three = ssh_three
 
-    print(time.time() - start)
+    print('elapsed time: {}'.format(time.time() - start))
 
 
 if __name__ == '__main__':
