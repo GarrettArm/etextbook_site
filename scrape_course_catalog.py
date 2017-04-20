@@ -79,4 +79,3 @@ def exclude_line(line):
 if __name__ == '__main__':
     all_course_urls = lookup_all_course_urls()
     scrape_write_all_course_listings(all_course_urls)
-    # courseNT_seasonDept = parse_course_listing_texts(filepath_to_scraped_course.txt)

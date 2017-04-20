@@ -134,7 +134,7 @@ def scrape_cambridge():
         CambridgeScraping.fetch_unless_present(url=url, override_ext='xlsx')
 
 
-if __name__ == '__main__':
+def scrape_all():
     print("""
 This script will not repull the datasets already present in the *_output folders.
 If you wish to refresh any dataset, do delete the currently present file.
@@ -148,3 +148,7 @@ Any xls, xlsx, or csv in an PublisherFiles\ subfolder will be used as source dat
     scrape_UPSO()
     scrape_JSTOR()
     scrape_cambridge()
+
+
+if __name__ == '__main__':
+    scrape_all()

@@ -3,7 +3,6 @@
 import paramiko
 import json
 import functools
-import time
 import os
 # LOUIS's SSH connection accepts wired campus connections.
 # You must make a "ssh_passwords.txt" file in the program directory with the text
@@ -81,31 +80,27 @@ def depipe_and_setify(text):
     return {i for i in text.split('|\n')}
 
 
-def generate_onlineISBN_file():
-    if os.path.isfile(os.path.join('CatalogFiles', 'onlineISBN.txt')):
+def generate_ISBN_file():
+    if os.path.isfile(os.path.join('CatalogFiles', 'SSH_ISBNs.txt')):
         print('file exists already.  Exiting.')
         return
 
-    start = time.time()
-    print('starting at time: {}'.format(start))
     user, password, host = read_credentials(server='production')
     command_one = """cd Xfer ; ./lz0007 'selitem -lONLINE -oC >locationOnline'"""
     ssh_one = send_an_ssh_command(host, user, password, command_one)
     exit_status_one, stdout_one, stderr_one = ssh_one
 
-    command_two_output_filename = 'onlineISBN.txt'
+    command_two_output_filename = 'SSH_ISBNs.txt'
     command_two = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC -fMARC -oSe -e020 > {}'""".format(command_two_output_filename)
     ssh_two = send_an_ssh_command(host, user, password, command_two)
     exit_status_two, stdout_two, stderr_two = ssh_two
 
     copy_an_ssh_file(host, user, password, command_two_output_filename)
 
-    command_three = """cd Xfer ; rm locationOnline ; rm onlineISBN.txt"""
+    command_three = """cd Xfer ; rm locationOnline ; rm SSH_ISBNs.txt"""
     ssh_three = send_an_ssh_command(host, user, password, command_three)
     exit_status_three, stdout_three, stderr_three = ssh_three
 
-    print('elapsed time: {}'.format(time.time() - start))
-
 
 if __name__ == '__main__':
-    generate_onlineISBN_file()
+    generate_ISBN_file()
