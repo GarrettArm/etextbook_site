@@ -1,9 +1,7 @@
 #! /usr/bin/env python3
 
-import io
 import os
-
-import pandas as pd
+import csv
 
 
 def exclude_line(line):
@@ -15,40 +13,43 @@ def exclude_line(line):
     return False
 
 
-def cleanup_bookstore_file(filepath):
-    headers = ('Dept/Course', 'Section', 'unnamed1', 'Professor', 'Author', 'Title', 'ISBN', 'Publisher', 'RcCd', 'STS')
+def cleanup_original_text(filepath):
+    headers = ('Dept/Course', 'Section', 'empty1', 'Professor',
+               'Author', 'Title', 'empty2', 'ISBN', 'Publisher', 'RcCd', 'STS')
 
     with open(filepath, 'r', encoding='cp1252') as f:
         lines = f.readlines()
+    usable_lines = [line for line in lines if not exclude_line(line)]
 
-    file_text = ', '.join(i for i in headers)
-    # original data is split into two lines -- this hack concatinates each pair of split lines
-    first_line = True
-    for line in lines:
-        if exclude_line(line):
-            continue
-        if first_line:
-            full_line = line.replace('\n', '')
-            first_line = False
-            continue
-        else:
-            full_line = '{}{}'.format(full_line, line.replace('\n', ''))
-            first_line = True
-            file_text = "{}\n{}".format(file_text, full_line)
-    return file_text
+    spamreader = csv.reader(usable_lines, delimiter=',', quotechar='"')
+
+    all_lines = [headers, ]
+    for num, line in enumerate(spamreader):
+        if num % 2 == 0:
+            combined_line = [i.replace('\n', '') for i in line]
+        elif num % 2 == 1:
+            combined_line.extend(i. replace('\n', '') for i in line)
+            all_lines.append(combined_line)
+    return all_lines
 
 
-def parse_bookstore_files(text):
-    headers = ('Dept/Course', 'Section', 'unnamed1', 'Professor', 'Author', 'Title', 'ISBN', 'Publisher', 'RcCd', 'STS')
-    return pd.read_csv(io.StringIO(text), delimiter=',', names=headers)
+def write_csv(data, dest_path):
+    os.makedirs(os.path.split(dest_path)[0], exist_ok=True)
+    with open(dest_path, "w", newline='', encoding='utf-8') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+        for line in data:
+            writer.writerow(line)
+
+
+def main(sourcefile, dest_path):
+    csv_list = cleanup_original_text('BookstoreFiles/fallbooklist.csv')
+    write_csv(csv_list, 'output/bookstore.csv')
 
 
 if __name__ == '__main__':
     print('Do you trust the csv the Bookstore provided (with books required for upcoming classes) is up-to-date?')
 
-    file_text = cleanup_bookstore_file('BookstoreFiles/fallbooklist.csv')
-    df = parse_bookstore_files(file_text)
+    sourcefile = 'BookstoreFiles/fallbooklist.csv'
+    dest_path = 'output/bookstore.csv'
 
-    os.makedirs('output', exist_ok=True)
-    with open(os.path.join('output', 'bookstore.csv'), 'w') as f:
-        f.write(df.to_csv())
+    main(sourcefile, dest_path)
