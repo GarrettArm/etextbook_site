@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+import os
+
 import parse_scraped_sourcefiles
 
 
@@ -53,4 +55,5 @@ list_a = [("muse_output/2013_Complete_Supplement.xls", "2013 Complete Supplement
 
 def test_find_headers_row():
     for file, sheet, headers_row in list_a:
-        assert parse_scraped_sourcefiles.find_headers_row(file, sheet) == headers_row
+        fullpath = os.path.join('PublisherFiles', file)
+        assert parse_scraped_sourcefiles.find_headers_row(fullpath, sheet) == headers_row

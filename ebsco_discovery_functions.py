@@ -138,16 +138,21 @@ def pretty_print(json_string):
     return json.dumps(dictionary, ensure_ascii=True, indent=2)
 
 
-if __name__ == '__main__':
+def main(isbn):
     UserId, Password, Profile = read_credentials()
     client = DiscoveryClient()
     client.authenticate_user(UserId, Password)
     client.create_session(Profile)
-    client.show_info()
-    a_search = client.basic_search('0803741693')
-    print(json.loads(a_search))
+    # client.show_info()
+    a_search = client.basic_search(isbn)
+    # a_result = json.loads(a_search)
     client.end_session()
-    print(pretty_print(client.Info))
+    # print(pretty_print(a_search))
+    return a_search
+
+
+if __name__ == '__main__':
+    a_search = main('0803741693')
 
     os.makedirs('output', exist_ok=True)
     with open(os.path.join('output', 'Discovery_search_for_a_novel_by_ISBN.txt'), 'w') as f:

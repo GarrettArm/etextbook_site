@@ -32,15 +32,18 @@ def parse_and_nest_xl(all_df_dict, file):
     with pd.ExcelFile(file) as xl:
         for sheet in xl.sheet_names:
             headers_row = find_headers_row(file, sheet)
-            if headers_row:
+            if headers_row is None:
+                print('\t\t{}: {} doesnt seem to have a headers row'.format(file, sheet))
+            else:
                 df = xl.parse(sheet, header=headers_row)
-                all_df_dict = create_nested_dict(all_df_dict, file, sheet, df)
+                df_as_dict = df.T.to_dict()
+                all_df_dict = create_nested_dict(all_df_dict, file, sheet, df_as_dict)
     return all_df_dict
 
 
 def parse_and_nest_csv(all_df_dict, file):
     df = pd.read_csv(file)
-    all_df_dict[file] = {'default': df}
+    all_df_dict[file] = {'default': df.T.to_dict()}
     return all_df_dict
 
 
@@ -51,7 +54,7 @@ def find_headers_row(file, sheet):
             df = xl.parse(sheet, header=headers_row)
             width, height = df.shape
             for heading in df.columns:
-                if 'ISBN' in str(heading):
+                if 'isbn' in str(heading).lower():
                     return headers_row
             else:
                 headers_row += 1
@@ -69,9 +72,10 @@ def create_nested_dict(dictionary, key, subkey, value):
 
 
 if __name__ == '__main__':
+    all_df_dict = main()
     all_columns = ''
     all_string = ""
-    all_df_dict = main()
+
     for k, v in all_df_dict.items():
         all_string = "{}\n\n{}".format(all_string, k)
         all_columns = "{}\n\n{}".format(all_columns, k)
