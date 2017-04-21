@@ -33,7 +33,7 @@ def parse_and_nest_xl(all_df_dict, file):
         for sheet in xl.sheet_names:
             headers_row = find_headers_row(file, sheet)
             if headers_row is None:
-                print('\t\t{}: {} doesnt seem to have a headers row'.format(file, sheet))
+                print('{}: {} doesnt seem to have a headers row'.format(file, sheet))
             else:
                 df = xl.parse(sheet, header=headers_row)
                 df_as_dict = df.T.to_dict()
@@ -73,15 +73,3 @@ def create_nested_dict(dictionary, key, subkey, value):
 
 if __name__ == '__main__':
     all_df_dict = main()
-    all_columns = ''
-    all_string = ""
-
-    for k, v in all_df_dict.items():
-        all_string = "{}\n\n{}".format(all_string, k)
-        all_columns = "{}\n\n{}".format(all_columns, k)
-        for name, df in v.items():
-            all_string = "{}\n{}\n{}".format(all_string, name, df.to_string(max_rows=5, index=False, index_names=False))
-            all_columns = "{}\n\{}{}".format(all_columns, name, df.columns)
-    os.makedirs('output', exist_ok=True)
-    with open(os.path.join('output', 'publisher_files.txt'), 'w') as f:
-        f.write(all_columns)

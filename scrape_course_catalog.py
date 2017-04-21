@@ -8,11 +8,13 @@ from bs4 import BeautifulSoup
 import requests
 
 
-season_dept_pattern = re.compile(r'(First|Second|)(Winter|Summer|Spring|Fall)(Module|)(\d{4})(Intersession|)([\S]+)')
+season_dept_pattern = re.compile(r'(First|Second|)(Winter|Summer|Spring|Fall)'
+                                 '(Module|)(\d{4})(Intersession|)([\S]+)')
 
 
 def make_a_request(url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36', }
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 '
+                             '(KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36', }
     response = requests.get(url, headers=headers, params=None)
     response.raise_for_status()
     return response
@@ -28,7 +30,8 @@ def lookup_all_course_urls():
     courses_urls = dict()
     for i in itertools.count():
         page_number = (i * 29) + 1
-        url_template = 'http://appl101.lsu.edu/BOOKLET2.nsf/513bc0fb715ec04e862565c20057c604?OpenView&Start={}'
+        url_template = 'http://appl101.lsu.edu/BOOKLET2.nsf/' \
+                       '513bc0fb715ec04e862565c20057c604?OpenView&Start={}'
         url = url_template.format(page_number)
         soup = make_a_soup(url)
         if "No documents found" in soup.find('h2'):
@@ -53,7 +56,10 @@ def scrape_write_all_course_listings(courses_urls):
         soup = make_a_soup(url)
         text = soup.find('pre')
         pre, season, post, year, modulator, dept = find_season_dept_in_last_line(text.text)
-        target_dir = os.path.join('course_listings', year, '_'.join(i for i in (pre, season, post, year, modulator) if i))
+        target_dir = os.path.join('course_listings',
+                                  year,
+                                  '_'.join(i for i in (pre, season, post, year, modulator) if i)
+                                  )
         os.makedirs(target_dir, exist_ok=True)
         target_filepath = os.path.join(target_dir, '{}.txt'.format(course))
         with open(target_filepath, 'w') as f:

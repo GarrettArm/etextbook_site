@@ -14,7 +14,8 @@ ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
 def findISBNs(filepath, filename):
     print (filename)
     isbns = []
-    with open(os.path.join(filepath, filename), "r", encoding="utf-8", errors="surrogateescape") as isbn_lines:
+    full_filepath = os.path.join(filepath, filename)
+    with open(full_filepath, "r", encoding="utf-8", errors="surrogateescape") as isbn_lines:
         read_data = isbn_lines.readlines()
     for line in read_data:
         isbns.extend(ISBNregex.findall(line))
@@ -29,7 +30,8 @@ def findISBNs(filepath, filename):
 def getMetadata(matchingISBNs, outFileName):
     rows = []
     for isbn in matchingISBNs:
-        url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getMetadata&format=xml&fl=*&ai=mike.waugh'.format(isbn)
+        url = 'http://xisbn.worldcat.org/webservices/xid/isbn/' \
+              '{}?method=getMetadata&format=xml&fl=*&ai=mike.waugh'.format(isbn)
         response = requests.get(url)
         tree = ET.fromstring(response.content)
         if 'stat' in tree.attrib:
@@ -42,9 +44,13 @@ def getMetadata(matchingISBNs, outFileName):
     with open(outFileName, "w", encoding="utf-8", errors="surrogateescape") as csvfile:
         try:
             fieldnames = rows[1].keys()
-        except:
+        # I don't know the actual error to expect, so i states an obviously wrong one.
+        except EOFError:
             fieldnames = "nothing"
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n', extrasaction='ignore')
+        writer = csv.DictWriter(csvfile,
+                                fieldnames=fieldnames,
+                                lineterminator='\n',
+                                extrasaction='ignore')
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
@@ -73,7 +79,8 @@ for catFile in os.listdir(catFilePath):
 xCourseISBNs = set()
 if queryWebService:
     for i in courseISBNs:
-        url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{}?method=getEditions&format=xml&ai=mike.waugh'.format(i)
+        url = 'http://xisbn.worldcat.org/webservices/xid/isbn/' \
+              '{}?method=getEditions&format=xml&ai=mike.waugh'.format(i)
         response = requests.get(url)
         tree = ET.fromstring(response.content)
         for child in tree:

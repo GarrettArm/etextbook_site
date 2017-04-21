@@ -34,7 +34,9 @@ class Scrape_Booklist:
     def fetch_url_content(self, url=None):
         if not url:
             url = self.url
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36', }
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/41.0.2228.0 Safari/537.36', }
         response = requests.get(url, headers=headers, params=self.payload)
         response.raise_for_status()
         return response.content
@@ -71,9 +73,10 @@ def scrape_springer():
     url = 'http://ebookrecords.springer.com/marcdownload/file'
 
     book_codes = ["11641", "11640", "41168", "11642", "11643", "41169", "11644",
-                  "11645", "11645-LN", "11646", "41170", "41171", "40367", "11647",
-                  "41172", "11648", "41177", "41173", "11649", "11649-LN", "11650",
-                  "11651", "11651-LN", "41174", "12059", "41175", "41176", ]
+                  "11645", "11645-LN", "11646", "41170", "41171", "40367",
+                  "11647", "41172", "11648", "41177", "41173", "11649",
+                  "11649-LN", "11650", "11651", "11651-LN", "41174", "12059",
+                  "41175", "41176", ]
     present_year = datetime.now().year
     all_years = [str(i) for i in range(2005, present_year + 1)]
     payload = {"code": book_codes,
@@ -135,12 +138,14 @@ def scrape_cambridge():
 
 
 def scrape_all():
-    print("""
-This script will not repull the datasets already present in the *_output folders.
-If you wish to refresh any dataset, do delete the currently present file.
-You must manually provide files for the datasets from Taylor & Francis, from
-Knovel, and from OpenStax.
-Any xls, xlsx, or csv in an PublisherFiles\ subfolder will be used as source data.""")
+    disclaimer = 'This script will not repull the datasets already present' \
+                 'in the *_output folders.  If you wish to refresh any dataset, ' \
+                 'do delete the currently present file.\n\n' \
+                 'You must manually provide files for the datasets from ' \
+                 'Taylor & Francis, from Knovel, and from OpenStax.\n' \
+                 'Any xls, xlsx, or csv in an PublisherFiles\ subfolder ' \
+                 'will be used as source data.'
+    print(disclaimer)
     scrape_muse()
     scrape_wiley()
     scrape_springer()

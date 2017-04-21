@@ -7,7 +7,8 @@ import csv
 def exclude_line(line):
     if not line.strip():
         return True
-    for exclude in ('------', 'Dept/Course', 'Publisher', 'Page:', 'User:', 'End,of Report', ',,,S,,,', ',,Rc,T,,,'):
+    for exclude in ('------', 'Dept/Course', 'Publisher', 'Page:', 'User:',
+                    'End,of Report', ',,,S,,,', ',,Rc,T,,,'):
         if exclude in line:
             return True
     return False
@@ -35,8 +36,14 @@ def cleanup_original_text(filepath):
 
 def write_csv(data, dest_path):
     os.makedirs(os.path.split(dest_path)[0], exist_ok=True)
-    with open(dest_path, "w", newline='', encoding='utf-8') as csv_file:
-        writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    with open(dest_path,
+              "w",
+              newline='',
+              encoding='utf-8') as csv_file:
+        writer = csv.writer(csv_file,
+                            delimiter=',',
+                            quotechar='"',
+                            quoting=csv.QUOTE_ALL)
         for line in data:
             writer.writerow(line)
 
@@ -47,7 +54,9 @@ def main(sourcefile, dest_path):
 
 
 if __name__ == '__main__':
-    print('Do you trust the csv the Bookstore provided (with books required for upcoming classes) is up-to-date?')
+    disclaimer = 'Do you trust the csv the Bookstore provided ' \
+                 '(with books required for upcoming classes) is up-to-date?'
+    print(disclaimer)
 
     sourcefile = 'BookstoreFiles/fallbooklist.csv'
     dest_path = 'output/bookstore.csv'

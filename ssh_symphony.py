@@ -91,7 +91,8 @@ def generate_ISBN_file():
     exit_status_one, stdout_one, stderr_one = ssh_one
 
     command_two_output_filename = 'SSH_ISBNs.txt'
-    command_two = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC -fMARC -oSe -e020 > {}'""".format(command_two_output_filename)
+    command_two = """cd Xfer ; cat locationOnline | ./lz0007 'selcatalog -iC """ \
+                  """-fMARC -oSe -e020 > {}'""".format(command_two_output_filename)
     ssh_two = send_an_ssh_command(host, user, password, command_two)
     exit_status_two, stdout_two, stderr_two = ssh_two
 

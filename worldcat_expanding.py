@@ -26,8 +26,11 @@ def lookup_alternates(ISBN, password):
 
 
 def call_worldcat(ISBN, password):
-    url = """http://www.worldcat.org/webservices/catalog/search/worldcat/sru?query=srw.bn+all+"{}"&wskey={}""".format(ISBN, password)
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36', }
+    url = 'http://www.worldcat.org/webservices/catalog/search/worldcat/sru?' \
+          'query=srw.bn+all+"{}"&wskey={}'.format(ISBN, password)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) '
+                             'AppleWebKit/537.36 (KHTML, like Gecko) '
+                             'Chrome/41.0.2228.0 Safari/537.36', }
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     marc_records_xml = response.content
@@ -65,6 +68,8 @@ def main(isbn):
 if __name__ == '__main__':
     os.makedirs('output', exist_ok=True)
     expanded_isbns, expanded_records = main('0803741693')
-    a_string = "{}\n\n{}".format(expanded_isbns, "\n".join([str(i.as_dict()) for i in expanded_records]))
+    a_string = "{}\n\n{}".format(expanded_isbns,
+                                 "\n".join([str(i.as_dict())
+                                            for i in expanded_records]))
     with open(os.path.join('output', 'worldcat_expanded.txt'), 'w') as f:
         f.write(a_string)
