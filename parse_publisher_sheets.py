@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 
 import os
+import re
 
 import pandas as pd
 
+ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
 
 def main():
     all_df_dict = dict()
@@ -71,5 +73,23 @@ def create_nested_dict(dictionary, key, subkey, value):
     return dictionary
 
 
+def make_set_all_isbns(all_pub_dict):
+    all_isbns = set()
+
+    for sourcefile, sheets_dict in all_pub_dict.items():
+        for sheet, rows_dict in sheets_dict.items():
+            for row, item_dict in rows_dict.items():
+                for header, value in item_dict.items():
+                    if 'isbn' in header.lower():
+                        flat_string = str(value).replace('-', '').replace('.0', '')
+                        if ISBNregex.match(flat_string):
+                            all_isbns.add(flat_string)
+    return all_isbns
+
+
 if __name__ == '__main__':
-    all_df_dict = main()
+    all_pub_dict = main()
+    all_isbns_set = make_set_all_isbns(all_pub_dict)
+
+    with open('publisher_lists_isbns.txt', 'w', encoding='utf-8') as f:
+        f.write('\n'.join(all_isbns_set))

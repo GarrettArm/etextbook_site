@@ -2,13 +2,14 @@
 
 import os
 import csv
+import sys
 
 
 def exclude_line(line):
     if not line.strip():
         return True
     for exclude in ('------', 'Dept/Course', 'Publisher', 'Page:', 'User:',
-                    'End,of Report', ',,,S,,,', ',,Rc,T,,,'):
+                    'End,of Report', ',,,S,,,', ',,Rc,', 'End of Report'):
         if exclude in line:
             return True
     return False
@@ -49,16 +50,18 @@ def write_csv(data, dest_path):
 
 
 def main(sourcefile, dest_path):
-    csv_list = cleanup_original_text('BookstoreFiles/fallbooklist.csv')
-    write_csv(csv_list, 'output/bookstore.csv')
+    csv_list = cleanup_original_text(sourcefile)
+    write_csv(csv_list, dest_path)
 
 
 if __name__ == '__main__':
-    disclaimer = 'Do you trust the csv the Bookstore provided ' \
-                 '(with books required for upcoming classes) is up-to-date?'
-    print(disclaimer)
-
-    sourcefile = 'BookstoreFiles/fallbooklist.csv'
-    dest_path = 'output/bookstore.csv'
+    try:
+        sourcefile = sys.argv[1]
+        dest_path = sys.argv[2]
+    except IndexError:
+        print('')
+        print('Change to: "python parse_bookstore_csv.py path_to_sourcefile path_for_dest_file"')
+        print('')
+        quit()
 
     main(sourcefile, dest_path)
