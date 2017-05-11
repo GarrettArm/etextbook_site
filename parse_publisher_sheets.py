@@ -7,6 +7,7 @@ import pandas as pd
 
 ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
 
+
 def main():
     all_df_dict = dict()
     xl_files, csv_files = lookup_all_xl_csv_files()
@@ -74,7 +75,7 @@ def create_nested_dict(dictionary, key, subkey, value):
 
 
 def make_set_all_isbns(all_pub_dict):
-    all_isbns = set()
+    all_isbns = dict()
 
     for sourcefile, sheets_dict in all_pub_dict.items():
         for sheet, rows_dict in sheets_dict.items():
@@ -83,7 +84,10 @@ def make_set_all_isbns(all_pub_dict):
                     if 'isbn' in header.lower():
                         flat_string = str(value).replace('-', '').replace('.0', '')
                         if ISBNregex.match(flat_string):
-                            all_isbns.add(flat_string)
+                            if all_isbns.get(flat_string):
+                                all_isbns[flat_string].append((sourcefile, sheet, item_dict))
+                            else:
+                                all_isbns[flat_string] = [(sourcefile, sheet, item_dict), ]
     return all_isbns
 
 

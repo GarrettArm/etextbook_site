@@ -39,11 +39,12 @@ def getMetadata(matchingISBNs):
 
 
 def write_csv(rows, outFileName):
+    try:
+        fieldnames = rows[0].keys()
+    except IndexError:
+        print('{}: no data to write'.format(outFileName))
+        return None
     with open(outFileName, "w", encoding="utf-8", errors="surrogateescape") as csvfile:
-        try:
-            fieldnames = rows[0].keys()
-        except IndexError:
-            fieldnames = "nothing"
         writer = csv.DictWriter(csvfile,
                                 fieldnames=fieldnames,
                                 lineterminator='\n',
@@ -76,23 +77,19 @@ def make_isbn_sets():
 # queryWebService will query xISBN webservice if true - will read previous results when false
 
 
-def expand_ISBN_set(isbn_set):
-    expandedISBNs = set()
-    if queryWebService:
-        for isbn in isbn_set:
-            url = 'http://xisbn.worldcat.org/webservices/xid/isbn/' \
-                  '{}?method=getEditions&format=xml&ai=mike.waugh'.format(isbn)
-            response = requests.get(url)
-            tree = ET.fromstring(response.content)
-            for child in tree:
-                expandedISBNs.add(child.text)
-        with open("expandedCourseISBNs.txt", "w") as outfile:
-            for item in expandedISBNs:
-                outfile.write("{}\n".format(item))
-    else:
-        with open("expandedCourseISBNs.txt", "r") as courseFile:
-            expandedISBNs = [book.strip() for book in courseFile]
-    return expandedISBNs
+def flatten_set_of_sets(set_of_sets):
+    return {i for bunch in set_of_sets for i in bunch}
+
+
+def find_similar_isbns(isbn):
+    similar_isbns = set()
+    url = 'http://xisbn.worldcat.org/webservices/xid/isbn/' \
+          '{}?method=getEditions&format=xml&ai=mike.waugh'.format(isbn)
+    response = requests.get(url)
+    tree = ET.fromstring(response.content)
+    for child in tree:
+        similar_isbns.add(child.text)
+    return similar_isbns
 
 
 if __name__ == '__main__':
@@ -101,7 +98,8 @@ if __name__ == '__main__':
     # notDRMfree in cat but not pubfile,
     # noMatch -- in the xCourseISBNs but not in pubfile or cat
     pubISBNs, courseISBNs, catISBNs = make_isbn_sets()
-    xCourseISBNs = expand_ISBN_set(courseISBNs)
+    sets_of_similar_isbns = [find_similar_isbns(isbn) for isbn in courseISBNs]
+    xCourseISBNs = flatten_set_of_sets(sets_of_similar_isbns)
 
     matches = pubISBNs.intersection(catISBNs).intersection(xCourseISBNs)
     needToBuy = pubISBNs.difference(catISBNs).intersection(xCourseISBNs)
