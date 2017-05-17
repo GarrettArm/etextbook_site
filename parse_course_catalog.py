@@ -4,7 +4,7 @@ import os
 from collections import namedtuple
 
 
-def parse_course_listing_texts(filepath):
+def parse_course_listings(filepath):
     course_nts = []
     with open(filepath, 'r') as f:
         lines = f.readlines()
@@ -44,7 +44,7 @@ def build_namedtuple(line):
                       line[117:].strip())
 
 
-if __name__ == '__main__':
+def example_usage():
     disclaimer = 'if you believe the courses for a certain semester ' \
                  'may have changed, You must delete the current file.  ' \
                  'Otherwise the new version will not be downloaded.'
@@ -54,10 +54,14 @@ if __name__ == '__main__':
     os.makedirs('output', exist_ok=True)
     a_string = ''
     for root, dirs, files in os.walk('.'):
-        if "Fall_2017" in root:
+        if "Summer_2017" in root:
             for file in files:
                 filepath = os.path.join(root, file)
-                course_nts, season_dept = parse_course_listing_texts(filepath)
+                course_nts, season_dept = parse_course_listings(filepath)
                 a_string = "{}\n{}\n{}".format(a_string, season_dept, course_nts)
     with open(os.path.join('output', 'course_catalog.txt'), 'w') as f:
         f.write(a_string)
+
+
+if __name__ == '__main__':
+    example_usage()
