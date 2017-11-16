@@ -138,6 +138,23 @@ def pretty_print(json_string):
     return json.dumps(dictionary, ensure_ascii=True, indent=2)
 
 
+def is_file_in_holdings(discovery_json):
+    all_copy_locations = []
+    records_list = discovery_json['SearchResult']['Data']['Records']
+    for record in records_list:
+        holdings_list = record.get('Holdings')
+        if not holdings_list:
+            continue
+        for holdings_info in holdings_list:
+            try:
+                copy_info_list = holdings_info['HoldingSimple']['CopyInformationList']
+            except KeyError:
+                continue
+            for copy_info in copy_info_list:
+                all_copy_locations.append(copy_info)
+    return all_copy_locations
+
+
 def main(isbn):
     UserId, Password, Profile = read_credentials()
     client = DiscoveryClient()
