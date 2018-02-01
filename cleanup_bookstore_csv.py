@@ -5,7 +5,7 @@ import csv
 import re
 import sys
 
-import parse_bookstore_csv as Bookstore
+import parse_bookstore_csv as ParseBookstore
 from collections import namedtuple
 
 ISBNregex = re.compile(r'(\b\d{13}\b)|(\b\d{9}[\d|X]\b)')
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         exit()
 
     path, filename = os.path.split(filepath)
-    bookstore_csv_items = Bookstore.cleanup_original_text(filepath)
+    bookstore_csv_items = ParseBookstore.cleanup_original_text(filepath)
     dest_path = os.path.join(path, 'cleaned_{}'.format(filename))
     write_csv(bookstore_csv_items, dest_path)
     print('\nlook for a "cleaned_{}" in the same folder as the raw bookstore csv\n'.format(filename))
