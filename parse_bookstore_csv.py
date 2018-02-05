@@ -15,16 +15,27 @@ def exclude_line(line):
     return False
 
 
-def cleanup_original_text(filepath):
-    headers = ('Dept/Course', 'Section', 'empty1', 'Professor',
-               'Author', 'Title', 'empty2', 'ISBN', 'Publisher', 'RcCd', 'STS')
-
+def read_csv_file(filepath):
     with open(filepath, 'r', encoding='cp1252') as f:
         lines = f.readlines()
-    usable_lines = [line for line in lines if not exclude_line(line)]
+        print(lines)
+        print('\t', lines)
+    return lines
 
+
+def byte_to_str(item, encoding='cp1252'):
+    if isinstance(item, bytes):
+        item = item.decode(encoding)
+    return item
+
+
+def cleanup_original_text(csv_source_list):
+    headers = ('Dept/Course', 'Section', 'empty1', 'Professor',
+               'Author', 'Title', 'empty2', 'ISBN', 'Publisher', 'RcCd', 'STS')
+    usable_lines = [byte_to_str(line)
+                    for line in csv_source_list
+                    if not exclude_line(byte_to_str(line))]
     spamreader = csv.reader(usable_lines, delimiter=',', quotechar='"')
-
     all_lines = [headers, ]
     for num, line in enumerate(spamreader):
         if num % 2 == 0:
@@ -50,7 +61,8 @@ def write_csv(data, dest_path):
 
 
 def main(sourcefile, dest_path):
-    csv_list = cleanup_original_text(sourcefile)
+    csv_source_list = read_csv_file(sourcefile)
+    csv_list = cleanup_original_text(csv_source_list)
     write_csv(csv_list, dest_path)
 
 
