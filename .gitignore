@@ -99,3 +99,18 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+*_passwords.txt
+.cache/*
+*.pyc
+.ipynb_checkpoints/*
+
+
+*_output/*
+source_material/*
+BookstoreFiles/
+CatalogFiles/
+PublisherFiles/
+*.csv
+*.xlsx
+*.txt
